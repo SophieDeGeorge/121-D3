@@ -1,5 +1,5 @@
 // @deno-types="npm:@types/leaflet"
-import leaflet from "leaflet";
+import leaflet, { LatLngBounds } from "leaflet";
 
 // Style sheets
 import "leaflet/dist/leaflet.css"; // supporting style for Leaflet
@@ -21,9 +21,27 @@ const mapDiv = document.createElement("div");
 mapDiv.id = "map";
 document.body.append(mapDiv);
 
+//STATUS PANEL
 const statusPanelDiv = document.createElement("div");
 statusPanelDiv.id = "statusPanel";
 document.body.append(statusPanelDiv);
+
+//PLAYER POINTS
+let playerPoints = 0;
+statusPanelDiv.innerHTML = "No held token";
+
+function changePlayerPointsTo(points: number) {
+  playerPoints = points;
+  if (playerPoints == 0) {
+    statusPanelDiv.innerHTML = "No held token";
+  } else {
+    statusPanelDiv.innerHTML = "Current token: " + playerPoints;
+  }
+  if (playerPoints == 32) {
+    statusPanelDiv.innerHTML = "Current token: " + playerPoints +
+      ", Your token is of sufficient value! Rejoice!";
+  }
+}
 
 // Our classroom location
 const CLASSROOM_LATLNG = leaflet.latLng(
@@ -61,10 +79,60 @@ function createCell(lat: number, lng: number, cache: boolean) {
     [lat + TILE_DEGREES, lng + TILE_DEGREES],
   ]);
   if (cache == true) {
-    //cache
+    createCache(bounds);
+  } else {
+    const rect = leaflet.rectangle(bounds);
+    rect.addTo(map);
+
+    //Click handler
+    rect.addEventListener("click", () => {
+      console.log("cell clicked");
+    });
   }
-  const rect = leaflet.rectangle(bounds);
+}
+
+function createCache(bounds: LatLngBounds) {
+  let rect = leaflet.rectangle(bounds, {
+    color: "red",
+  });
   rect.addTo(map);
+  let pointValue = Math.floor(
+    luck(
+      [bounds.getSouthWest().lat, bounds.getNorthEast().lng, "initialValue"]
+        .toString(),
+    ) * 2,
+  );
+  if (pointValue == 0) {
+    pointValue = 1; //SKETCHY
+  }
+  let myIcon = leaflet.divIcon({
+    className: "cache-icon",
+    html: pointValue.toString(),
+    iconSize: [30, 30],
+  });
+  const myMarker = leaflet.marker(bounds.getCenter(), {
+    icon: myIcon,
+    interactive: false,
+  }).addTo(map);
+
+  //Click handler
+  rect.addEventListener("click", () => {
+    console.log("cache clicked");
+    if (playerPoints == pointValue) {
+      changePlayerPointsTo(0);
+      pointValue = pointValue * 2;
+      myIcon = leaflet.divIcon({
+        className: "cache-icon",
+        html: pointValue.toString(),
+        iconSize: [30, 30],
+      });
+      myMarker.setIcon(myIcon);
+    } else if (playerPoints == 0) {
+      changePlayerPointsTo(pointValue);
+      myMarker.removeFrom(map);
+      rect.setStyle({ color: "light blue" });
+    }
+  });
 }
 
 // Rectangle Cells
