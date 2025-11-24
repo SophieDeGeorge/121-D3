@@ -43,6 +43,36 @@ function changePlayerPointsTo(points: number) {
   }
 }
 
+const northButton = document.createElement("button");
+northButton.innerHTML = "North";
+document.body.append(northButton);
+
+const eastButton = document.createElement("button");
+eastButton.innerHTML = "East";
+document.body.append(eastButton);
+
+const southButton = document.createElement("button");
+southButton.innerHTML = "South";
+document.body.append(southButton);
+
+const westButton = document.createElement("button");
+westButton.innerHTML = "West";
+document.body.append(westButton);
+
+//BUTTON CLICK HANDLERS
+northButton.addEventListener("click", () => {
+  movePlayer("north");
+});
+eastButton.addEventListener("click", () => {
+  movePlayer("east");
+});
+southButton.addEventListener("click", () => {
+  movePlayer("south");
+});
+westButton.addEventListener("click", () => {
+  movePlayer("west");
+});
+
 // Our classroom location
 const CLASSROOM_LATLNG = leaflet.latLng(
   36.997936938057016,
@@ -63,6 +93,51 @@ const map = leaflet.map(mapDiv, {
   zoomControl: false,
   scrollWheelZoom: false,
 });
+
+//PLAYER
+const player_position = leaflet.latLng(
+  36.997936938057016,
+  -122.05703507501151,
+); // the classroom for now
+const playerMarker = leaflet.marker(player_position);
+playerMarker.bindTooltip("That's you!");
+playerMarker.addTo(map);
+
+const cell_north = leaflet.latLng(
+  0.000100000000000,
+  0.000100000000000,
+);
+const cell_east = leaflet.latLng(
+  0.000100000000000,
+  0.000100000000000,
+);
+const cell_south = leaflet.latLng(
+  0.000100000000000,
+  0.000100000000000,
+);
+const cell_west = leaflet.latLng(
+  0.000100000000000,
+  0.000100000000000,
+);
+
+function movePlayer(direction: string) {
+  if (direction == "north") {
+    player_position.lat += cell_north.lat;
+    console.log("Player position: " + player_position);
+  } else if (direction == "east") {
+    player_position.lng += cell_east.lng;
+    console.log("Player position: " + player_position);
+  } else if (direction == "south") {
+    player_position.lat -= cell_south.lat;
+    console.log("Player position: " + player_position);
+  } else if (direction == "west") {
+    player_position.lng -= cell_west.lng;
+    console.log("Player position: " + player_position);
+  } else {
+    console.log("No valid direction");
+  }
+  playerMarker.setLatLng(player_position);
+}
 
 // Populate the map with a background tile layer
 leaflet
@@ -92,7 +167,7 @@ function createCell(lat: number, lng: number, cache: boolean) {
 }
 
 function createCache(bounds: LatLngBounds) {
-  let rect = leaflet.rectangle(bounds, {
+  const rect = leaflet.rectangle(bounds, {
     color: "red",
   });
   rect.addTo(map);

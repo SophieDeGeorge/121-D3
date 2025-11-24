@@ -31,6 +31,7 @@ Key gameplay challenge: Can players collect and craft tokens from nearby locatio
 - [x] player can pick up one token
 - [x] tokens can be crafted to double value
 - [x] detect token value
+- [x] 
 - [ ] draw the player's location on the map
 
 - ...
