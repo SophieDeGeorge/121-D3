@@ -33,7 +33,7 @@ Key gameplay challenge: Can players collect and craft tokens from nearby locatio
 - [x] detect token value
 - [x] button movement by one cell
 - [x] draw the player's new location on the map
-- [ ] remove cells without caches
+- [x] remove cells without caches
 - [ ] generate cells as map scrolls
 - [ ] only cells close to player can be interacted with
 - ...

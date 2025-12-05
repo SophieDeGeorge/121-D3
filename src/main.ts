@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-unused-vars
 // @deno-types="npm:@types/leaflet"
 import leaflet, { LatLngBounds } from "leaflet";
 
@@ -148,30 +149,46 @@ leaflet
   })
   .addTo(map);
 
-function createCell(lat: number, lng: number, cache: boolean) {
+class Cell {
+  i: number;
+  j: number;
+  pointValue: number;
+
+  constructor(i: number, j: number, pointValue: number) {
+    this.i = i;
+    this.j = j;
+    this.pointValue = pointValue;
+  }
+}
+
+const cells: Cell[] = [];
+
+let pointValue: number = 0;
+function createCell(lat: number, lng: number, cache: boolean): Cell {
+  const i: number = lat;
+  const j: number = lng;
   const bounds = leaflet.latLngBounds([
     [lat, lng],
     [lat + TILE_DEGREES, lng + TILE_DEGREES],
   ]);
   if (cache == true) {
-    createCache(bounds);
-  } else {
-    const rect = leaflet.rectangle(bounds);
-    rect.addTo(map);
-
-    //Click handler
-    rect.addEventListener("click", () => {
-      console.log("cell clicked");
-    });
+    return (createCache(bounds, lat, lng))!;
   }
+  pointValue = 0;
+  const emptyCell: Cell = {
+    i,
+    j,
+    pointValue,
+  };
+  return emptyCell;
 }
 
-function createCache(bounds: LatLngBounds) {
+function createCache(bounds: LatLngBounds, i: number, j: number) {
   const rect = leaflet.rectangle(bounds, {
     color: "red",
   });
   rect.addTo(map);
-  let pointValue = Math.floor(
+  pointValue = Math.floor(
     luck(
       [bounds.getSouthWest().lat, bounds.getNorthEast().lng, "initialValue"]
         .toString(),
@@ -208,9 +225,15 @@ function createCache(bounds: LatLngBounds) {
       rect.setStyle({ color: "light blue" });
     }
   });
+  const curCell: Cell = {
+    i,
+    j,
+    pointValue,
+  };
+  return curCell;
 }
 
-// Rectangle Cells
+// Fill Map Initially
 const mapBounds = map.getBounds();
 let cache = false;
 for (
@@ -226,7 +249,7 @@ for (
     if (luck([i, j].toString()) < CACHE_SPAWN_PROBABILITY) {
       cache = true;
     }
-    createCell(i, j, cache);
+    cells.push(createCell(i, j, cache));
     cache = false;
   }
 }
