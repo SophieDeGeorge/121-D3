@@ -42,7 +42,7 @@ Key gameplay challenge: Can players collect and craft tokens from nearby locatio
 - [x] implement map by checking if there is map data when generating a token
 - [x] add playerGeoLocation function to get players irl location
 - [x] move the player_position and player marker to playerGeoLocation
-- [ ] call getPlayerGeoLocation on a timer
+- [x] call getPlayerGeoLocation on a timer
 
 - ...
 
