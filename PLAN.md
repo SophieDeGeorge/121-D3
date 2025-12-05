@@ -34,8 +34,11 @@ Key gameplay challenge: Can players collect and craft tokens from nearby locatio
 - [x] button movement by one cell
 - [x] draw the player's new location on the map
 - [x] remove cells without caches
-- [ ] generate cells as map scrolls
-- [ ] only cells close to player can be interacted with
+- [x] cell generation is consistent
+- [x] cells are not stored in an array to save memory
+- [x] generate cells as map scrolls
+- [x] only cells close to player can be interacted with
+
 - ...
 
 ## D3.b

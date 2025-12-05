@@ -84,6 +84,7 @@ const CLASSROOM_LATLNG = leaflet.latLng(
 const GAMEPLAY_ZOOM_LEVEL = 19;
 const TILE_DEGREES = 1e-4;
 const CACHE_SPAWN_PROBABILITY = 0.1;
+const MAX_REACH = 70;
 
 // Create the map (element with id "map" is defined in index.html)
 const map = leaflet.map(mapDiv, {
@@ -159,11 +160,13 @@ class Cell {
   pointValue: number;
   rect: leaflet.Rectangle;
   marker: leaflet.Marker;
+  bounds: leaflet.LatLngBounds;
 
   constructor(
     pointValue: number,
     bounds: leaflet.LatLngBounds,
   ) {
+    this.bounds = bounds;
     this.pointValue = pointValue;
     this.rect = leaflet.rectangle(bounds, {
       color: "red",
@@ -189,18 +192,25 @@ class Cell {
 
   createClickHandler() {
     this.rect.addEventListener("click", () => {
-      if (playerPoints == this.pointValue) {
-        changePlayerPointsTo(0);
-        this.changeValue(this.pointValue * 2);
-      } else if (playerPoints == 0) {
-        changePlayerPointsTo(this.pointValue);
-        this.changeValue(0);
-      } else if (this.pointValue == 0) {
-        this.changeValue(playerPoints);
-        changePlayerPointsTo(0);
+      if (this.withinRange()) {
+        if (playerPoints == this.pointValue) {
+          changePlayerPointsTo(0);
+          this.changeValue(this.pointValue * 2);
+        } else if (playerPoints == 0) {
+          changePlayerPointsTo(this.pointValue);
+          this.changeValue(0);
+        } else if (this.pointValue == 0) {
+          this.changeValue(playerPoints);
+          changePlayerPointsTo(0);
+        }
       }
     });
   }
+
+  withinRange(): boolean {
+    return (this.bounds.getCenter().distanceTo(player_position) < MAX_REACH);
+  }
+
   changeValue(newValue: number) {
     const newIcon = leaflet.divIcon({
       className: "cache-icon",
