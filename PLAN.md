@@ -31,23 +31,29 @@ Key gameplay challenge: Can players collect and craft tokens from nearby locatio
 - [x] player can pick up one token
 - [x] tokens can be crafted to double value
 - [x] detect token value
+
+- ...
+
+## D3.b
+
 - [x] button movement by one cell
 - [x] draw the player's new location on the map
 - [x] remove cells without caches
+
+### D3.c
+
 - [x] cell generation is consistent
 - [x] cells are not stored in an array to save memory
 - [x] generate cells as map scrolls
 - [x] only cells close to player can be interacted with
 - [x] create map to store modified cells
 - [x] implement map by checking if there is map data when generating a token
+
+### D3.d
+
 - [x] add playerGeoLocation function to get players irl location
 - [x] move the player_position and player marker to playerGeoLocation
 - [x] call getPlayerGeoLocation on a timer
-
-- ...
-
-## D3.b
-
-...
-
-### 
+- [x] add button to switch movemodes
+- [ ] create save and load functionality
+- [ ] create save and load buttons
