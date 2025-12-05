@@ -43,6 +43,9 @@ function changePlayerPointsTo(points: number) {
       ", Your token is of sufficient value! Rejoice!";
   }
 }
+const modeButton = document.createElement("button");
+modeButton.innerHTML = "Switch Move Mode";
+document.body.append(modeButton);
 
 const northButton = document.createElement("button");
 northButton.innerHTML = "North";
@@ -60,7 +63,22 @@ const westButton = document.createElement("button");
 westButton.innerHTML = "West";
 document.body.append(westButton);
 
+const moveButtons: HTMLButtonElement[] = [
+  northButton,
+  eastButton,
+  southButton,
+  westButton,
+];
+
 //BUTTON CLICK HANDLERS
+modeButton.addEventListener("click", () => {
+  moveMode = !moveMode;
+  moveButtons.forEach((button: HTMLButtonElement) => {
+    button.disabled = !moveMode;
+    button.hidden = !moveMode;
+  });
+});
+
 northButton.addEventListener("click", () => {
   movePlayer("north");
 });
@@ -85,6 +103,7 @@ const GAMEPLAY_ZOOM_LEVEL = 19;
 const TILE_DEGREES = 1e-4;
 const CACHE_SPAWN_PROBABILITY = 0.1;
 const MAX_REACH = 70;
+let moveMode: boolean = true;
 
 // Create the map (element with id "map" is defined in index.html)
 const map = leaflet.map(mapDiv, {
@@ -325,6 +344,9 @@ requestAnimationFrame(Timer);
 
 getPlayerGeoLocation();
 function getPlayerGeoLocation() {
+  if (moveMode) {
+    return;
+  }
   console.log("plocation grabbed");
   navigator.geolocation.getCurrentPosition(
     (position: GeolocationPosition) => {
