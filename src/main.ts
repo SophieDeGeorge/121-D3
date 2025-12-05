@@ -126,22 +126,24 @@ const cell_west = leaflet.latLng(
 );
 
 function movePlayer(direction: string) {
+  UpdateCells();
   if (direction == "north") {
     player_position.lat += cell_north.lat;
-    console.log("Player position: " + player_position);
+    //console.log("Player position: " + player_position);
   } else if (direction == "east") {
     player_position.lng += cell_east.lng;
-    console.log("Player position: " + player_position);
+    //console.log("Player position: " + player_position);
   } else if (direction == "south") {
     player_position.lat -= cell_south.lat;
-    console.log("Player position: " + player_position);
+    //console.log("Player position: " + player_position);
   } else if (direction == "west") {
     player_position.lng -= cell_west.lng;
-    console.log("Player position: " + player_position);
+    //console.log("Player position: " + player_position);
   } else {
     console.log("No valid direction");
   }
   playerMarker.setLatLng(player_position);
+  map.panTo(player_position);
 }
 
 // Populate the map with a background tile layer
@@ -154,20 +156,14 @@ leaflet
   .addTo(map);
 
 class Cell {
-  i: number;
-  j: number;
   pointValue: number;
   rect: leaflet.Rectangle;
   marker: leaflet.Marker;
 
   constructor(
-    i: number,
-    j: number,
     pointValue: number,
     bounds: leaflet.LatLngBounds,
   ) {
-    this.i = i;
-    this.j = j;
     this.pointValue = pointValue;
     this.rect = leaflet.rectangle(bounds, {
       color: "red",
@@ -186,24 +182,33 @@ class Cell {
   }
 
   deleteCell() {
+    console.log("deleteCell");
     this.rect.removeFrom(map);
     this.marker.removeFrom(map);
   }
 
   createClickHandler() {
     this.rect.addEventListener("click", () => {
-      console.log("cache clicked");
-      if (playerPoints == pointValue) {
+      if (playerPoints == this.pointValue) {
         changePlayerPointsTo(0);
-        pointValue = pointValue * 2;
-        const newIcon = leaflet.divIcon({
-          className: "cache-icon",
-          html: pointValue.toString(),
-          iconSize: [30, 30],
-        });
-        this.marker.setIcon(newIcon);
+        this.changeValue(this.pointValue * 2);
+      } else if (playerPoints == 0) {
+        changePlayerPointsTo(this.pointValue);
+        this.changeValue(0);
+      } else if (this.pointValue == 0) {
+        this.changeValue(playerPoints);
+        changePlayerPointsTo(0);
       }
     });
+  }
+  changeValue(newValue: number) {
+    const newIcon = leaflet.divIcon({
+      className: "cache-icon",
+      html: newValue.toString(),
+      iconSize: [30, 30],
+    });
+    this.marker.setIcon(newIcon);
+    this.pointValue = newValue;
   }
 }
 
@@ -211,22 +216,21 @@ const cells: Cell[] = [];
 
 let pointValue: number = 0;
 
-function createCell(lat: number, lng: number) {
-  const i: number = lat;
-  const j: number = lng;
+function createCell(i: number, j: number) {
+  const lat: number = i * TILE_DEGREES;
+  const lng: number = j * TILE_DEGREES;
   const bounds = leaflet.latLngBounds([
     [lat, lng],
     [lat + TILE_DEGREES, lng + TILE_DEGREES],
   ]);
   pointValue = Math.floor(
     luck(
-      [bounds.getSouthWest().lat, bounds.getNorthEast().lng, "initialValue"]
-        .toString(),
-    ) * 2,
+          [i, j, "initialValue"]
+            .toString(),
+        ) * 3 + 1,
   );
+  pointValue = Math.pow(2, pointValue);
   const newCell: Cell = new Cell(
-    i,
-    j,
     pointValue,
     bounds,
   );
@@ -234,27 +238,10 @@ function createCell(lat: number, lng: number) {
 }
 
 // Fill Map Initially
-const mapBounds = map.getBounds();
-let cache = false;
-for (
-  let i = mapBounds.getSouthWest().lat;
-  i < mapBounds.getNorthEast().lat;
-  i += TILE_DEGREES
-) {
-  for (
-    let j = mapBounds.getSouthWest().lng;
-    j < mapBounds.getNorthEast().lng;
-    j += TILE_DEGREES
-  ) {
-    if (luck([i, j].toString()) < CACHE_SPAWN_PROBABILITY) {
-      createCell(i, j);
-    }
-    console.log("Array Length" + cells.length);
-    cache = false;
-  }
-}
+regenerateCells();
 
 function UpdateCells() {
+  console.log("Array Length" + cells.length);
   const mapBounds = map.getBounds();
   const iLAT = mapBounds.getSouthWest().lat;
   const iLNG = mapBounds.getSouthWest().lng;
@@ -265,9 +252,32 @@ function UpdateCells() {
     [jLAT, jLNG],
   ]);
   DeleteAllCells();
+  regenerateCells();
 }
 
 function DeleteAllCells() {
   cells.forEach((cell) => {
+    cell.deleteCell();
   });
+  cells.splice(0, cells.length);
+}
+
+function regenerateCells() {
+  const mapBounds = map.getBounds();
+  for (
+    let i = Math.floor(mapBounds.getSouthWest().lat / TILE_DEGREES);
+    i <= Math.floor(mapBounds.getNorthEast().lat / TILE_DEGREES) + 1;
+    i++
+  ) {
+    console.log("i: " + i);
+    for (
+      let j = Math.floor(mapBounds.getSouthWest().lng / TILE_DEGREES);
+      j <= Math.floor(mapBounds.getNorthEast().lng / TILE_DEGREES) + 1;
+      j++
+    ) {
+      if (luck([i, j, "mapGeneration"].toString()) < CACHE_SPAWN_PROBABILITY) {
+        createCell(i, j);
+      }
+    }
+  }
 }
