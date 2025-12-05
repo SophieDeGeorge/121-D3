@@ -305,8 +305,27 @@ function regenerateCells() {
     }
   }
 }
+
+let timer = 0;
+let prevTimeStamp = -1;
+function Timer(timeStamp: number) {
+  if (prevTimeStamp == -1) {
+    prevTimeStamp = timeStamp;
+  }
+  const deltaTime = (timeStamp - prevTimeStamp) / 1000;
+  prevTimeStamp = timeStamp;
+  timer += deltaTime;
+  if (timer > 5) {
+    timer = 0;
+    getPlayerGeoLocation();
+  }
+  requestAnimationFrame(Timer);
+}
+requestAnimationFrame(Timer);
+
 getPlayerGeoLocation();
 function getPlayerGeoLocation() {
+  console.log("plocation grabbed");
   navigator.geolocation.getCurrentPosition(
     (position: GeolocationPosition) => {
       player_position = leaflet.latLng(
