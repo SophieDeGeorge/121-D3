@@ -363,3 +363,41 @@ function getPlayerGeoLocation() {
   );
 }
 
+function saveGame() {
+  const progress = {
+    playerPoints,
+    modifiedCells: Array.from(modifiedCells.entries()),
+  };
+  localStorage.setItem("progress", JSON.stringify(progress));
+}
+
+function loadGame() {
+  const progress = localStorage.getItem("progress");
+  if (progress == null) {
+    return;
+  }
+  const progressData = JSON.parse(progress);
+  changePlayerPointsTo(progressData.playerPoints);
+  modifiedCells.clear();
+  for (const [key, value] of progressData.modifiedCells) {
+    modifiedCells.set(key, value);
+  }
+  UpdateCells();
+}
+loadGame();
+
+const saveButton = document.createElement("button");
+saveButton.innerHTML = "save";
+document.body.append(saveButton);
+
+saveButton.addEventListener("click", () => {
+  saveGame();
+});
+
+const loadButton = document.createElement("button");
+loadButton.innerHTML = "load";
+document.body.append(loadButton);
+
+loadButton.addEventListener("click", () => {
+  loadGame();
+});
