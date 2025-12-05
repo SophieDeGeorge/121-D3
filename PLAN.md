@@ -55,5 +55,6 @@ Key gameplay challenge: Can players collect and craft tokens from nearby locatio
 - [x] move the player_position and player marker to playerGeoLocation
 - [x] call getPlayerGeoLocation on a timer
 - [x] add button to switch movemodes
-- [ ] create save and load functionality
-- [ ] create save and load buttons
+- [x] create save and load functionality
+- [x] create save and load buttons
+- [x] newGame button and functionality

@@ -401,3 +401,17 @@ document.body.append(loadButton);
 loadButton.addEventListener("click", () => {
   loadGame();
 });
+
+function newGame() {
+  modifiedCells.clear();
+  changePlayerPointsTo(0);
+  UpdateCells();
+}
+
+const newGameButton = document.createElement("button");
+newGameButton.innerHTML = "New Game";
+document.body.append(newGameButton);
+
+newGameButton.addEventListener("click", () => {
+  newGame();
+});
