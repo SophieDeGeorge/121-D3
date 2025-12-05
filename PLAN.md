@@ -31,12 +31,14 @@ Key gameplay challenge: Can players collect and craft tokens from nearby locatio
 - [x] player can pick up one token
 - [x] tokens can be crafted to double value
 - [x] detect token value
-- [x] 
-- [ ] draw the player's location on the map
-
+- [x] button movement by one cell
+- [x] draw the player's new location on the map
+- [ ] remove cells without caches
+- [ ] generate cells as map scrolls
+- [ ] only cells close to player can be interacted with
 - ...
 
-## D3.b:
+## D3.b
 
 ...
 
