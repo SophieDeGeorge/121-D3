@@ -38,6 +38,8 @@ Key gameplay challenge: Can players collect and craft tokens from nearby locatio
 - [x] cells are not stored in an array to save memory
 - [x] generate cells as map scrolls
 - [x] only cells close to player can be interacted with
+- [x] create map to store modified cells
+- [x] implement map by checking if there is map data when generating a token
 
 - ...
 

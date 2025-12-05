@@ -156,16 +156,24 @@ leaflet
   })
   .addTo(map);
 
+const modifiedCells = new Map<string, number>();
+
 class Cell {
+  i: number;
+  j: number;
   pointValue: number;
   rect: leaflet.Rectangle;
   marker: leaflet.Marker;
   bounds: leaflet.LatLngBounds;
 
   constructor(
+    i: number,
+    j: number,
     pointValue: number,
     bounds: leaflet.LatLngBounds,
   ) {
+    this.i = i;
+    this.j = j;
     this.bounds = bounds;
     this.pointValue = pointValue;
     this.rect = leaflet.rectangle(bounds, {
@@ -219,12 +227,11 @@ class Cell {
     });
     this.marker.setIcon(newIcon);
     this.pointValue = newValue;
+    modifiedCells.set(`${this.i} ${this.j}`, this.pointValue);
   }
 }
 
 const cells: Cell[] = [];
-
-let pointValue: number = 0;
 
 function createCell(i: number, j: number) {
   const lat: number = i * TILE_DEGREES;
@@ -233,14 +240,21 @@ function createCell(i: number, j: number) {
     [lat, lng],
     [lat + TILE_DEGREES, lng + TILE_DEGREES],
   ]);
-  pointValue = Math.floor(
-    luck(
-          [i, j, "initialValue"]
-            .toString(),
-        ) * 3 + 1,
-  );
-  pointValue = Math.pow(2, pointValue);
+  let pointValue = 0;
+  if (modifiedCells.has(`${i} ${j}`)) {
+    pointValue = modifiedCells.get(`${i} ${j}`)!;
+  } else {
+    pointValue = Math.floor(
+      luck(
+            [i, j, "initialValue"]
+              .toString(),
+          ) * 3 + 1,
+    );
+    pointValue = Math.pow(2, pointValue);
+  }
   const newCell: Cell = new Cell(
+    i,
+    j,
     pointValue,
     bounds,
   );
