@@ -40,6 +40,9 @@ Key gameplay challenge: Can players collect and craft tokens from nearby locatio
 - [x] only cells close to player can be interacted with
 - [x] create map to store modified cells
 - [x] implement map by checking if there is map data when generating a token
+- [x] add playerGeoLocation function to get players irl location
+- [x] move the player_position and player marker to playerGeoLocation
+- [ ] call getPlayerGeoLocation on a timer
 
 - ...
 

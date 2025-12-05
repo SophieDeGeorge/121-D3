@@ -101,7 +101,7 @@ map.addEventListener("moveend", () => {
 });
 
 //PLAYER
-const player_position = leaflet.latLng(
+let player_position = leaflet.latLng(
   36.997936938057016,
   -122.05703507501151,
 ); // the classroom for now
@@ -304,4 +304,20 @@ function regenerateCells() {
       }
     }
   }
+}
+getPlayerGeoLocation();
+function getPlayerGeoLocation() {
+  navigator.geolocation.getCurrentPosition(
+    (position: GeolocationPosition) => {
+      player_position = leaflet.latLng(
+        position.coords.latitude,
+        position.coords.longitude,
+      );
+
+      map.panTo(
+        player_position,
+      );
+      playerMarker.setLatLng(player_position);
+    },
+  );
 }
