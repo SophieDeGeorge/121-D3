@@ -95,6 +95,10 @@ const map = leaflet.map(mapDiv, {
   scrollWheelZoom: false,
 });
 
+map.addEventListener("moveend", () => {
+  UpdateCells();
+});
+
 //PLAYER
 const player_position = leaflet.latLng(
   36.997936938057016,
@@ -250,6 +254,28 @@ for (
       cache = true;
     }
     cells.push(createCell(i, j, cache));
+    console.log("Array Length" + cells.length);
     cache = false;
   }
+}
+
+function UpdateCells() {
+  const mapBounds = map.getBounds();
+  const iLAT = mapBounds.getSouthWest().lat;
+  const iLNG = mapBounds.getSouthWest().lng;
+  const jLAT = mapBounds.getNorthEast().lat;
+  const jLNG = mapBounds.getNorthEast().lng;
+  const screenBounds = leaflet.latLngBounds([
+    [iLAT, iLNG],
+    [jLAT, jLNG],
+  ]);
+  cells.forEach((cell) => {
+    const cellLatLng = leaflet.latLngBounds([
+      [cell.i, cell.j],
+      [cell.i + TILE_DEGREES, cell.j + TILE_DEGREES],
+    ]);
+    if (screenBounds.contains(cellLatLng) && (cell.pointValue > 0)) {
+      createCache(cellLatLng, cell.i, cell.j);
+    }
+  });
 }
