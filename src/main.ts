@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-unused-vars
 // @deno-types="npm:@types/leaflet"
-import leaflet, { LatLngBounds } from "leaflet";
+import leaflet from "leaflet";
 
 // Style sheets
 import "leaflet/dist/leaflet.css"; // supporting style for Leaflet
@@ -157,84 +157,80 @@ class Cell {
   i: number;
   j: number;
   pointValue: number;
+  rect: leaflet.Rectangle;
+  marker: leaflet.Marker;
 
-  constructor(i: number, j: number, pointValue: number) {
+  constructor(
+    i: number,
+    j: number,
+    pointValue: number,
+    bounds: leaflet.LatLngBounds,
+  ) {
     this.i = i;
     this.j = j;
     this.pointValue = pointValue;
+    this.rect = leaflet.rectangle(bounds, {
+      color: "red",
+    });
+    this.rect.addTo(map);
+    const myIcon = leaflet.divIcon({
+      className: "cache-icon",
+      html: pointValue.toString(),
+      iconSize: [30, 30],
+    });
+    this.marker = leaflet.marker(bounds.getCenter(), {
+      icon: myIcon,
+      interactive: false,
+    }).addTo(map);
+    this.createClickHandler();
+  }
+
+  deleteCell() {
+    this.rect.removeFrom(map);
+    this.marker.removeFrom(map);
+  }
+
+  createClickHandler() {
+    this.rect.addEventListener("click", () => {
+      console.log("cache clicked");
+      if (playerPoints == pointValue) {
+        changePlayerPointsTo(0);
+        pointValue = pointValue * 2;
+        const newIcon = leaflet.divIcon({
+          className: "cache-icon",
+          html: pointValue.toString(),
+          iconSize: [30, 30],
+        });
+        this.marker.setIcon(newIcon);
+      }
+    });
   }
 }
 
 const cells: Cell[] = [];
 
 let pointValue: number = 0;
-function createCell(lat: number, lng: number, cache: boolean): Cell {
+
+function createCell(lat: number, lng: number) {
   const i: number = lat;
   const j: number = lng;
   const bounds = leaflet.latLngBounds([
     [lat, lng],
     [lat + TILE_DEGREES, lng + TILE_DEGREES],
   ]);
-  if (cache == true) {
-    return (createCache(bounds, lat, lng))!;
-  }
-  pointValue = 0;
-  const emptyCell: Cell = {
-    i,
-    j,
-    pointValue,
-  };
-  return emptyCell;
-}
-
-function createCache(bounds: LatLngBounds, i: number, j: number) {
-  const rect = leaflet.rectangle(bounds, {
-    color: "red",
-  });
-  rect.addTo(map);
   pointValue = Math.floor(
     luck(
       [bounds.getSouthWest().lat, bounds.getNorthEast().lng, "initialValue"]
         .toString(),
     ) * 2,
   );
-  if (pointValue == 0) {
-    pointValue = 1; //SKETCHY
-  }
-  let myIcon = leaflet.divIcon({
-    className: "cache-icon",
-    html: pointValue.toString(),
-    iconSize: [30, 30],
-  });
-  const myMarker = leaflet.marker(bounds.getCenter(), {
-    icon: myIcon,
-    interactive: false,
-  }).addTo(map);
-
-  //Click handler
-  rect.addEventListener("click", () => {
-    console.log("cache clicked");
-    if (playerPoints == pointValue) {
-      changePlayerPointsTo(0);
-      pointValue = pointValue * 2;
-      myIcon = leaflet.divIcon({
-        className: "cache-icon",
-        html: pointValue.toString(),
-        iconSize: [30, 30],
-      });
-      myMarker.setIcon(myIcon);
-    } else if (playerPoints == 0) {
-      changePlayerPointsTo(pointValue);
-      myMarker.removeFrom(map);
-      rect.setStyle({ color: "light blue" });
-    }
-  });
-  const curCell: Cell = {
+  const newCell: Cell = new Cell(
     i,
     j,
     pointValue,
-  };
-  return curCell;
+    bounds,
+  );
+  cells.push(newCell);
 }
 
 // Fill Map Initially
@@ -251,9 +247,8 @@ for (
     j += TILE_DEGREES
   ) {
     if (luck([i, j].toString()) < CACHE_SPAWN_PROBABILITY) {
-      cache = true;
+      createCell(i, j);
     }
-    cells.push(createCell(i, j, cache));
     console.log("Array Length" + cells.length);
     cache = false;
   }
@@ -269,13 +264,10 @@ function UpdateCells() {
     [iLAT, iLNG],
     [jLAT, jLNG],
   ]);
+  DeleteAllCells();
+}
+
+function DeleteAllCells() {
   cells.forEach((cell) => {
-    const cellLatLng = leaflet.latLngBounds([
-      [cell.i, cell.j],
-      [cell.i + TILE_DEGREES, cell.j + TILE_DEGREES],
-    ]);
-    if (screenBounds.contains(cellLatLng) && (cell.pointValue > 0)) {
-      createCache(cellLatLng, cell.i, cell.j);
-    }
   });
 }
