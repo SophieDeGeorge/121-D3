@@ -43,6 +43,8 @@ function changePlayerPointsTo(points: number) {
       ", Your token is of sufficient value! Rejoice!";
   }
 }
+
+let moveMode: boolean = false;
 const modeButton = document.createElement("button");
 modeButton.innerHTML = "Switch Move Mode";
 document.body.append(modeButton);
@@ -69,6 +71,13 @@ const moveButtons: HTMLButtonElement[] = [
   southButton,
   westButton,
 ];
+
+if (!moveMode) {
+  moveButtons.forEach((button: HTMLButtonElement) => {
+    button.disabled = !moveMode;
+    button.hidden = !moveMode;
+  });
+}
 
 //BUTTON CLICK HANDLERS
 modeButton.addEventListener("click", () => {
@@ -103,7 +112,6 @@ const GAMEPLAY_ZOOM_LEVEL = 19;
 const TILE_DEGREES = 1e-4;
 const CACHE_SPAWN_PROBABILITY = 0.1;
 const MAX_REACH = 70;
-let moveMode: boolean = true;
 
 // Create the map (element with id "map" is defined in index.html)
 const map = leaflet.map(mapDiv, {
@@ -120,10 +128,33 @@ map.addEventListener("moveend", () => {
 });
 
 //PLAYER
-let player_position = leaflet.latLng(
+let start_position: leaflet.LatLng;
+let player_position: leaflet.LatLng;
+navigator.geolocation.getCurrentPosition(
+  (position: GeolocationPosition) => {
+    player_position = leaflet.latLng(
+      position.coords.latitude,
+      position.coords.longitude,
+    );
+  },
+);
+
+player_position = leaflet.latLng(
   36.997936938057016,
   -122.05703507501151,
-); // the classroom for now
+); // the classroom
+
+if (!moveMode) {
+  navigator.geolocation.getCurrentPosition(
+    (position: GeolocationPosition) => {
+      player_position = leaflet.latLng(
+        position.coords.latitude,
+        position.coords.longitude,
+      );
+    },
+  );
+}
+
 const playerMarker = leaflet.marker(player_position);
 playerMarker.bindTooltip("That's you!");
 playerMarker.addTo(map);
@@ -184,6 +215,7 @@ class Cell {
   rect: leaflet.Rectangle;
   marker: leaflet.Marker;
   bounds: leaflet.LatLngBounds;
+  cellColor: string;
 
   constructor(
     i: number,
@@ -195,8 +227,10 @@ class Cell {
     this.j = j;
     this.bounds = bounds;
     this.pointValue = pointValue;
+    this.cellColor = "red";
+    this.changeColor();
     this.rect = leaflet.rectangle(bounds, {
-      color: "red",
+      color: this.cellColor,
     });
     this.rect.addTo(map);
     const myIcon = leaflet.divIcon({
@@ -232,6 +266,14 @@ class Cell {
         }
       }
     });
+  }
+
+  changeColor() {
+    if (this.withinRange()) {
+      this.cellColor = "blue";
+    } else {
+      this.cellColor = "red";
+    }
   }
 
   withinRange(): boolean {
@@ -334,7 +376,7 @@ function Timer(timeStamp: number) {
   const deltaTime = (timeStamp - prevTimeStamp) / 1000;
   prevTimeStamp = timeStamp;
   timer += deltaTime;
-  if (timer > 5) {
+  if (timer > 1) {
     timer = 0;
     getPlayerGeoLocation();
   }
@@ -342,12 +384,10 @@ function Timer(timeStamp: number) {
 }
 requestAnimationFrame(Timer);
 
-getPlayerGeoLocation();
 function getPlayerGeoLocation() {
   if (moveMode) {
     return;
   }
-  console.log("plocation grabbed");
   navigator.geolocation.getCurrentPosition(
     (position: GeolocationPosition) => {
       player_position = leaflet.latLng(
